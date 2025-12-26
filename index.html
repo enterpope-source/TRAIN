@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Train Ticket App</title>
+    <style>
+        @font-face {
+            font-family: 'Aileron';
+            src: url('Aileron-Heavy.otf') format('opentype');
+            font-weight: 800;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'Texicali';
+            src: url('Texicali-ExtraBlack.otf') format('opentype');
+            font-weight: 900;
+            font-style: normal;
+        }
+
+        @keyframes slideLeftRight {
+            0% {
+                transform: translateX(-8%);
+            }
+            50% {
+                transform: translateX(8%);
+            }
+            100% {
+                transform: translateX(-8%);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Form Screen */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100vh;
+            justify-content: center;
+        }
+
+        .form-container h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 28px;
+            color: #4A90E2;
+        }
+
+        .question-group {
+            margin-bottom: 30px;
+        }
+
+        .question-group label {
+            display: block;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .option-button {
+            width: 100%;
+            padding: 18px;
+            margin-bottom: 12px;
+            background: #1a1a2e;
+            border: 2px solid #4A90E2;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .option-button:hover {
+            background: #4A90E2;
+            transform: translateX(5px);
+        }
+
+        .option-button.selected {
+            background: #4A90E2;
+            border-color: #6BB6FF;
+        }
+
+        .dropdown-select {
+            width: 100%;
+            padding: 18px;
+            background: #1a1a2e;
+            border: 2px solid #4A90E2;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+        }
+
+        .dropdown-select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .color-picker-row {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        .color-picker-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-picker-item span {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .color-input {
+            width: 100%;
+            height: 50px;
+            border: 2px solid #4A90E2;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            padding: 0;
+        }
+
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 6px;
+        }
+
+        .generate-button {
+            width: 100%;
+            padding: 20px;
+            background: #4A90E2;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.3s;
+        }
+
+        .generate-button:hover {
+            background: #6BB6FF;
+        }
+
+        .generate-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        /* Ticket Screen */
+        .ticket-container {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            background: #000;
+            position: relative;
+        }
+
+        .ticket-container.active {
+            display: block;
+        }
+
+        /* Template Container */
+        .template-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .template-image-hidden {
+            display: none;
+        }
+
+        .template-canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* QR Code Overlay */
+        .qr-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .qr-code {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+
+        .qr-code.hidden {
+            display: none;
+        }
+
+        /* Origin Text Overlay */
+        .origin-overlay {
+            position: absolute;
+            top: 51%;
+            right: 28%;
+            font-family: 'Aileron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #000;
+            text-transform: uppercase;
+            text-align: right;
+        }
+
+        /* Destination Text Overlay */
+        .destination-overlay {
+            position: absolute;
+            top: 64%;
+            right: 28%;
+            font-family: 'Aileron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #000;
+            text-transform: uppercase;
+            text-align: right;
+        }
+
+        /* Zone Number Overlays */
+        .zone-number {
+            position: absolute;
+            font-family: 'Texicali', sans-serif;
+            font-size: 38px;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+        }
+
+        .zone-origin {
+            top: 59.5%;
+            left: 66%;
+            transform: translate(-50%, -50%);
+        }
+
+        .zone-destination {
+            top: 71.5%;
+            left: 66%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Activate Screen */
+        .activate-container {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            background: #000;
+            position: relative;
+        }
+
+        .activate-container.active {
+            display: block;
+        }
+
+        .activate-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Activate screen specific positioning */
+        .activate-origin {
+            top: 17%;
+        }
+
+        .activate-destination {
+            top: 29%;
+        }
+
+        .activate-zone-origin {
+            top: 24%;
+        }
+
+        .activate-zone-destination {
+            top: 36%;
+        }
+
+        /* Activate Button Overlay - invisible clickable area */
+        .activate-button-overlay {
+            position: absolute;
+            top: 55%;
+            left: 10%;
+            right: 10%;
+            height: 8%;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        /* Timestamp Overlay */
+        .timestamp-overlay {
+            position: absolute;
+            top: 45%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: 'Aileron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            z-index: 10;
+            animation: slideLeftRight 3s ease-in-out infinite;
+            text-shadow: 
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000,
+                0 -1px 0 #000,
+                0 1px 0 #000,
+                -1px 0 0 #000,
+                1px 0 0 #000,
+                0 0 5px rgba(0, 0, 0, 0.9),
+                0 0 10px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.7),
+                0 0 35px rgba(0, 0, 0, 0.6),
+                0 0 50px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Form Screen -->
+    <div class="form-container" id="formContainer">
+        <h1>Train Ticket</h1>
+        
+        <div class="question-group">
+            <label>Origin Location</label>
+            <select class="dropdown-select" id="originSelect">
+                <option value="" disabled selected>Select origin</option>
+                <option value="Fairfield" data-zone="17">Fairfield</option>
+                <option value="Southport" data-zone="17">Southport</option>
+                <option value="Westport" data-zone="17">Westport</option>
+                <option value="Stamford" data-zone="12">Stamford</option>
+                <option value="Bridgeport" data-zone="23">Bridgeport</option>
+                <option value="Grand Central" data-zone="1">Grand Central</option>
+            </select>
+        </div>
+
+        <div class="question-group">
+            <label>Destination</label>
+            <select class="dropdown-select" id="destinationSelect">
+                <option value="" disabled selected>Select destination</option>
+                <option value="Fairfield" data-zone="17">Fairfield</option>
+                <option value="Southport" data-zone="17">Southport</option>
+                <option value="Westport" data-zone="17">Westport</option>
+                <option value="Stamford" data-zone="12">Stamford</option>
+                <option value="Bridgeport" data-zone="23">Bridgeport</option>
+                <option value="Grand Central" data-zone="1">Grand Central</option>
+            </select>
+        </div>
+
+        <div class="question-group">
+            <label>Ticket Bar Colors</label>
+            <div class="color-picker-row">
+                <div class="color-picker-item">
+                    <span>Left</span>
+                    <input type="color" class="color-input" id="colorLeft" value="#b58c8d">
+                </div>
+                <div class="color-picker-item">
+                    <span>Middle</span>
+                    <input type="color" class="color-input" id="colorMiddle" value="#a2797f">
+                </div>
+                <div class="color-picker-item">
+                    <span>Right</span>
+                    <input type="color" class="color-input" id="colorRight" value="#fc9c7e">
+                </div>
+            </div>
+        </div>
+
+        <button class="generate-button" id="generateButton" disabled>Generate Ticket</button>
+    </div>
+
+    <!-- Activate Ticket Screen -->
+    <div class="activate-container" id="activateContainer">
+        <div class="template-container">
+            <img class="activate-image" id="activateImage" src="2nd.png" alt="Activate Ticket">
+            
+            <!-- Origin Text Overlay for Activate Screen -->
+            <div class="origin-overlay activate-origin" id="activateOriginName">STAMFORD</div>
+            
+            <!-- Destination Text Overlay for Activate Screen -->
+            <div class="destination-overlay activate-destination" id="activateDestinationName">WESTPORT</div>
+            
+            <!-- Origin Zone Number for Activate Screen -->
+            <div class="zone-number zone-origin activate-zone-origin" id="activateOriginZone">12</div>
+            
+            <!-- Destination Zone Number for Activate Screen -->
+            <div class="zone-number zone-destination activate-zone-destination" id="activateDestinationZone">17</div>
+            
+            <!-- Activate Button Overlay -->
+            <div class="activate-button-overlay" id="activateButton"></div>
+        </div>
+    </div>
+
+    <!-- Ticket Screen -->
+    <div class="ticket-container" id="ticketContainer">
+        <div class="template-container">
+            <canvas class="template-canvas" id="templateCanvas"></canvas>
+            <img class="template-image-hidden" id="templateImage" src="template.png" alt="Ticket Template" crossorigin="anonymous">
+            
+            <!-- QR Code Overlay - Two images that swap -->
+            <div class="qr-overlay">
+                <img class="qr-code" id="qrCode1" src="qr_code_1.png" alt="QR Code">
+                <img class="qr-code hidden" id="qrCode2" src="qr_code_2.png" alt="QR Code">
+            </div>
+            
+            <!-- Timestamp Overlay -->
+            <div class="timestamp-overlay" id="timestamp">3:15:42 PM 12/25/2025</div>
+            
+            <!-- Origin Text Overlay -->
+            <div class="origin-overlay" id="originName">STAMFORD</div>
+            
+            <!-- Destination Text Overlay -->
+            <div class="destination-overlay" id="destinationName">WESTPORT</div>
+            
+            <!-- Origin Zone Number -->
+            <div class="zone-number zone-origin" id="originZone">12</div>
+            
+            <!-- Destination Zone Number -->
+            <div class="zone-number zone-destination" id="destinationZone">17</div>
+        </div>
+    </div>
+
+    <script>
+        let ticketData = null;
+        let qrSwapInterval = null;
+        let timeInterval = null;
+
+        // Original colors in the template (RGB values)
+        const originalColors = {
+            left: { r: 181, g: 140, b: 141 },    // #b58c8d
+            middle: { r: 162, g: 121, b: 127 },  // #a2797f
+            right: { r: 252, g: 156, b: 126 }    // #fc9c7e
+        };
+
+        // Color matching tolerance (reduced for more precision)
+        const colorTolerance = 15;
+
+        // Calculate color distance
+        function colorDistance(r, g, b, target) {
+            return Math.sqrt(
+                Math.pow(r - target.r, 2) +
+                Math.pow(g - target.g, 2) +
+                Math.pow(b - target.b, 2)
+            );
+        }
+
+        // Check if a color matches within tolerance
+        function colorMatches(r, g, b, target) {
+            return colorDistance(r, g, b, target) <= colorTolerance * 2;
+        }
+
+        // Convert hex to RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        // Replace colors in the template image
+        function replaceColors(newLeftHex, newMiddleHex, newRightHex) {
+            const canvas = document.getElementById('templateCanvas');
+            const ctx = canvas.getContext('2d');
+            const img = document.getElementById('templateImage');
+
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            const newLeft = hexToRgb(newLeftHex);
+            const newMiddle = hexToRgb(newMiddleHex);
+            const newRight = hexToRgb(newRightHex);
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // Calculate distance to each original color
+                const distLeft = colorDistance(r, g, b, originalColors.left);
+                const distMiddle = colorDistance(r, g, b, originalColors.middle);
+                const distRight = colorDistance(r, g, b, originalColors.right);
+
+                // Find the closest match
+                const minDist = Math.min(distLeft, distMiddle, distRight);
+                const threshold = 25;
+
+                if (minDist <= threshold) {
+                    if (distLeft === minDist) {
+                        data[i] = newLeft.r;
+                        data[i + 1] = newLeft.g;
+                        data[i + 2] = newLeft.b;
+                    } else if (distMiddle === minDist) {
+                        data[i] = newMiddle.r;
+                        data[i + 1] = newMiddle.g;
+                        data[i + 2] = newMiddle.b;
+                    } else if (distRight === minDist) {
+                        data[i] = newRight.r;
+                        data[i + 1] = newRight.g;
+                        data[i + 2] = newRight.b;
+                    }
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Zone mapping
+        const zoneMap = {
+            'Fairfield': 17,
+            'Southport': 17,
+            'Westport': 17,
+            'Stamford': 12,
+            'Bridgeport': 23,
+            'Grand Central': 1
+        };
+
+        // Origin selection
+        document.getElementById('originSelect').addEventListener('change', function() {
+            checkFormComplete();
+        });
+
+        // Destination selection
+        document.getElementById('destinationSelect').addEventListener('change', function() {
+            checkFormComplete();
+        });
+
+        // Check if form is complete
+        function checkFormComplete() {
+            const origin = document.getElementById('originSelect').value;
+            const destination = document.getElementById('destinationSelect').value;
+            const generateButton = document.getElementById('generateButton');
+            
+            if (origin && destination) {
+                generateButton.disabled = false;
+            } else {
+                generateButton.disabled = true;
+            }
+        }
+
+        // Generate ticket
+        document.getElementById('generateButton').addEventListener('click', function() {
+            const originSelect = document.getElementById('originSelect');
+            const destinationSelect = document.getElementById('destinationSelect');
+            const origin = originSelect.value;
+            const destination = destinationSelect.value;
+            const originZone = zoneMap[origin];
+            const destinationZone = zoneMap[destination];
+            
+            ticketData = {
+                origin: origin,
+                destination: destination,
+                originZone: originZone,
+                destinationZone: destinationZone,
+                timestamp: new Date()
+            };
+
+            // Hide form, show activate screen
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('activateContainer').classList.add('active');
+
+            // Update activate screen overlays
+            document.getElementById('activateOriginName').textContent = origin.toUpperCase();
+            document.getElementById('activateDestinationName').textContent = destination.toUpperCase();
+            document.getElementById('activateOriginZone').textContent = originZone;
+            document.getElementById('activateDestinationZone').textContent = destinationZone;
+        });
+
+        // Activate button click - go to actual ticket
+        document.getElementById('activateButton').addEventListener('click', function() {
+            // Hide activate screen, show ticket
+            document.getElementById('activateContainer').classList.remove('active');
+            document.getElementById('ticketContainer').classList.add('active');
+
+            // Wait for image to load then apply colors
+            const templateImg = document.getElementById('templateImage');
+            if (templateImg.complete) {
+                applyTicketUpdates(ticketData.origin, ticketData.destination, ticketData.originZone, ticketData.destinationZone);
+            } else {
+                templateImg.onload = function() {
+                    applyTicketUpdates(ticketData.origin, ticketData.destination, ticketData.originZone, ticketData.destinationZone);
+                };
+            }
+        });
+
+        function applyTicketUpdates(origin, destination, originZone, destinationZone) {
+            // Update text overlays
+            document.getElementById('originName').textContent = origin.toUpperCase();
+            document.getElementById('destinationName').textContent = destination.toUpperCase();
+            
+            // Update zone numbers
+            document.getElementById('originZone').textContent = originZone;
+            document.getElementById('destinationZone').textContent = destinationZone;
+            
+            // Apply custom colors by replacing pixels in template
+            const colorLeft = document.getElementById('colorLeft').value;
+            const colorMiddle = document.getElementById('colorMiddle').value;
+            const colorRight = document.getElementById('colorRight').value;
+            replaceColors(colorLeft, colorMiddle, colorRight);
+
+            // Start QR code swap animation
+            startQRSwap();
+            
+            // Start time updates
+            updateTime();
+            timeInterval = setInterval(updateTime, 1000);
+        }
+
+        // QR Code Swap Animation - alternate every 1.2 seconds
+        function startQRSwap() {
+            const qrCode1 = document.getElementById('qrCode1');
+            const qrCode2 = document.getElementById('qrCode2');
+            let showingFirst = true;
+
+            qrSwapInterval = setInterval(() => {
+                if (showingFirst) {
+                    qrCode1.classList.add('hidden');
+                    qrCode2.classList.remove('hidden');
+                } else {
+                    qrCode2.classList.add('hidden');
+                    qrCode1.classList.remove('hidden');
+                }
+                showingFirst = !showingFirst;
+            }, 1200);
+        }
+
+        // Update time display (Eastern Standard Time)
+        function updateTime() {
+            const now = new Date();
+            const estTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+            
+            const time = estTime.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            const date = estTime.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            });
+            document.getElementById('timestamp').textContent = time + ' ' + date;
+        }
+
+        // Initialize time display
+        updateTime();
+    </script>
+</body>
+</html>
